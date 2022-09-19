@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SudokuSolver</title>
+</head>
+<body>
+    <button id="solveB">Solve!</button>
+    <style>
+        #solveB {
+            position: absolute;
+            width: 50px;
+            height: 25px;
+            left: 75%;
+            top: 10%;
+        }
+    </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+function makeGrid() {
+for (let i = 0; i < 4; i++) {
+grid.push([]);
+for (let j = 0; j < 4; j++) {
+grid[i].push(0);
+}
+}
+}
+let circles = {};
+const colours = ["blue", "red", "green", "brown"];
+let grid = []
+let solved = false;
+makeGrid();
+function makeCircles() {
+for (var i = 0; i < 16; i++) {
+$("body").append("<div id='circle"+i.toString()+"'></div>");
+$("#circle"+i.toString()).css("position", "absolute");
+$("#circle"+i.toString()).css("left", (((i%4)*75)+50).toString()+"px");
+$("#circle"+i.toString()).css("top", ((Math.floor(i/4)*75)+25)+"px");
+$("#circle"+i.toString()).css("width", "50px");
+$("#circle"+i.toString()).css("height", "50px");
+$("#circle"+i.toString()).css("background-color", "black");
+$("#circle"+i.toString()).css("-moz-border-radius", "50%");
+$("#circle"+i.toString()).css("border-radius", "50%");
+circles["circle"+i.toString()] = {};
+circles["circle"+i.toString()].colour = "black";
+$("#circle"+i.toString()).click(function(e) {
+let id = e.target.id;
+let number = id.substring(id.length-1, id.length);
+if (circles[id].colour === "black") {
+circles[id].colour = colours[0];
+$("#"+id).css("background-color", colours[0]+"");
+grid[Math.floor(number/4)][number%4] = 1;
+} else {
+let newColour = colours[(colours.indexOf(circles[id].colour)+1)%4];
+circles[id].colour = newColour;
+$("#"+id).css("background-color", newColour);
+grid[Math.floor(number/4)][number%4] = ((colours.indexOf(circles[id].colour)+1)%4)+1;
+}
+});
+}
+}
+function solve() {
+for (let y =0; y < 4; y++) {
+for (let x=0; x < 4; x++) {
+if (circles["circle"+(y*4+x)].colour === "black") {
+for (let n = 1; n < 5; n++) {
+if (possible(y,x,n)) {
+grid[y][x] = n
+$("#circle"+(y*4+x)).css("background-color", colours[n-1]);
+circles["circle"+(y*4+x)].colour = colours[n-1];
+solve();
+grid[x][y] = 0;
+}
+}
+return;
+}
+}
+}
+}
+function possible(y, x, n) {
+let modx = 1;
+let mody = 1;
+let newColour = colours[n-1];
+if (x == 1 || x == 3) {
+modx = -1;
+}
+if (y == 1 || y == 3) {
+mody = -1;
+}
+if (newColour != circles["circle"+(y*4+(x+modx))].colour && newColour != circles["circle"+((y+mody)*4+x)].colour && newColour != circles["circle"+((y+mody)*4+(x+modx))].colour) { //checking the square around it
+for (let v = 0; v < 4; v++) {
+if (v != y) {
+if (newColour == circles["circle"+(v*4+x)].colour) {
+return false;
+}
+}
+}
+for (let h = 0; h < 4; h++) {
+if (h != x) {
+if (newColour == circles["circle"+(y*4+h)].colour) {
+return false;
+}
+}
+}
+return true;
+} else {
+return false;
+}
+}
+makeCircles();
+$("#solveB").on("click", function() {
+    if (!solved) {
+        solved = true;
+        solve();
+    }
+});
+</script>
+</body>
+</html>
